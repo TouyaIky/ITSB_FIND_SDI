@@ -1,0 +1,10 @@
+{% extends "app_base.html" %}
+{% block title %}Riwayat Aktivitas — Satpam{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Riwayat Aktivitas</h1><p>Seluruh aktivitas laporan, verifikasi, pengembalian, serta kritik dan saran.</p></div></div>
+{% if rows %}<div class="table-wrap"><table><thead><tr><th>Waktu</th><th>Aktivitas</th><th>Barang / Subjek</th><th>Oleh</th><th>Status</th></tr></thead><tbody>
+{% for a in rows %}<tr><td>{{ a.ts|idt }}</td><td><span class="chip"><i data-lucide="{{ kinds[a.kind][1] }}" class="i"></i>{{ kinds[a.kind][0] }}</span></td><td><b>{{ a.name }}</b></td><td>{{ a.actor }}</td><td><span class="badge {{ a.status|status_cls }}">{{ a.status|status_label }}</span></td></tr>{% endfor %}</tbody></table></div>
+{% if pages > 1 %}<div class="tabs" style="margin-top:1.2rem;justify-content:center">
+  {% if page > 1 %}<a href="{{ url_for('satpam.activity', page=page-1) }}">Sebelumnya</a>{% endif %}<a class="on" href="#">{{ page }} / {{ pages }}</a>{% if page < pages %}<a href="{{ url_for('satpam.activity', page=page+1) }}">Berikutnya</a>{% endif %}</div>{% endif %}
+{% else %}<div class="empty"><i data-lucide="history" class="i"></i><h3>Belum ada aktivitas</h3><p>Belum ada aktivitas yang tercatat.</p></div>{% endif %}
+{% endblock %}

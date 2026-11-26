@@ -1,0 +1,73 @@
+{#- Panduan HANYA untuk mahasiswa/pengguna. Satpam tidak menerima tombol maupun isi panduan (tidak dirender sama sekali). -#}
+{% macro help_fab() -%}
+{%- if not (g.user and g.user.role == 'security') -%}
+<button type="button" class="help-fab" data-modal-open="helpModal" aria-haspopup="dialog" aria-label="Panduan Penggunaan"><span class="fab-q" aria-hidden="true">?</span><span class="fab-tip">Panduan Penggunaan</span></button>
+{%- endif -%}
+{%- endmacro %}
+{% macro help_modal() -%}
+{%- if not (g.user and g.user.role == 'security') -%}
+{% macro step(n, icon, title, open=False) -%}
+<details class="hstep" {{ 'open' if open }}><summary><span class="hn">{{ n }}</span><span class="ht">{{ title }}</span><i data-lucide="chevron-down" class="i chev"></i></summary><div class="hbody">{{ caller() }}</div></details>
+{%- endmacro %}
+<div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal-box help-box">
+    <button class="modal-x" data-modal-close aria-label="Tutup"><i data-lucide="x" class="i"></i></button>
+    <div class="help-head"><span class="help-ic"><i data-lucide="life-buoy" class="i"></i></span>
+      <div><h3 id="helpTitle">Panduan Penggunaan ITSB Find</h3><p>Langkah singkat memakai fitur yang tersedia di aplikasi ini.</p></div></div>
+    <div class="help-list">
+      {% call step('01', 'info', 'Mengenal ITSB Find', True) %}
+        <p>ITSB Find adalah platform Lost and Found untuk civitas ITSB. Kamu dapat melaporkan barang hilang, melaporkan barang yang kamu temukan, dan mencari barang di daftar. Penyerahan barang kepada pemilik selalu diverifikasi langsung oleh Satpam.</p>
+        <p class="tip">Belum punya akun? Pilih “Daftar”. Hanya ingin melihat-lihat? Pilih “Masuk sebagai Tamu”; tamu dapat mencari barang tetapi tidak dapat membuat laporan.</p>
+      {% endcall %}
+      {% call step('02', 'package-search', 'Menjelajahi Barang') %}
+        <ol>
+          <li>Buka “Daftar Barang Temuan” untuk barang yang sudah diterima dan disimpan Satpam.</li>
+          <li>Buka “Daftar Barang Hilang” untuk laporan kehilangan dari pengguna lain.</li>
+          <li>Gunakan kolom “Cari”, kategori, lokasi, tanggal, dan status untuk menyaring hasil, lalu klik kartu barang untuk melihat detail.</li>
+        </ol>
+        <p class="tip">Nomor telepon dan data pribadi pelapor tidak pernah ditampilkan di daftar.</p>
+      {% endcall %}
+      {% call step('03', 'search-x', 'Melaporkan Barang Hilang') %}
+        <ol>
+          <li>Periksa dulu Daftar Barang Temuan, mungkin barangmu sudah ada.</li>
+          <li>Buka “Laporkan Barang Hilang”, lalu isi nama barang, kategori, ciri-ciri, lokasi, tanggal, waktu, dan nomor telepon.</li>
+          <li>Foto bersifat opsional (JPG, JPEG, atau PNG, maksimal 2 MB). Tekan tombol simpan.</li>
+          <li>Laporan langsung tersimpan dan sistem menampilkan rekomendasi barang temuan yang mirip.</li>
+        </ol>
+        <p class="tip">Rekomendasi hanya petunjuk, bukan penentuan kepemilikan.</p>
+      {% endcall %}
+      {% call step('04', 'package-plus', 'Melaporkan Barang Ditemukan') %}
+        <ol>
+          <li>Buka “Laporkan Barang Temuan”, isi data barang, lokasi, tanggal, dan waktu.</li>
+          <li>Unggah foto barang (wajib) dan isi nomor telepon, lalu kirim laporan.</li>
+          <li>Serahkan barang secara fisik ke pos Satpam.</li>
+          <li>Setelah Satpam mengonfirmasi penerimaan, barang tampil di Daftar Barang Temuan.</li>
+        </ol>
+      {% endcall %}
+      {% call step('05', 'clipboard-list', 'Memantau Laporan') %}
+        <ol>
+          <li>Buka “Laporan Saya” untuk melihat semua laporanmu beserta statusnya.</li>
+          <li>Status barang temuan: Menunggu Penyerahan, Belum Dikembalikan, Sudah Dikembalikan, atau Ditolak.</li>
+          <li>Status barang hilang: Belum Ditemukan, Selesai, atau Ditolak. Jika laporan ditolak, alasannya ditampilkan di halaman yang sama.</li>
+          <li>Jika barangmu sudah kembali, tekan “Sudah ketemu” pada laporan kehilanganmu.</li>
+        </ol>
+      {% endcall %}
+      {% call step('06', 'hand-helping', 'Proses Pengambilan Barang') %}
+        <ol>
+          <li>Jika barangmu ada di Daftar Barang Temuan, datang ke pos Satpam.</li>
+          <li>Bawa identitas dan bukti kepemilikan, misalnya foto lama barang atau ciri khusus yang tidak tampak di daftar.</li>
+          <li>Satpam memverifikasi kepemilikanmu, mendokumentasikan serah terima, lalu mengubah status barang menjadi “Sudah Dikembalikan”.</li>
+        </ol>
+      {% endcall %}
+      {% call step('07', 'message-square-text', 'Kritik dan Saran') %}
+        <ol>
+          <li>Buka “Kritik dan Saran”, pilih kategori, isi subjek dan pesan, lalu kirim.</li>
+          <li>Jika kamu masuk dengan akun, status tindak lanjut masukanmu tampil di halaman yang sama.</li>
+        </ol>
+      {% endcall %}
+    </div>
+    <button type="button" class="btn btn-primary btn-block" data-modal-close style="margin-top:1.2rem">Tutup</button>
+  </div>
+</div>
+{%- endif -%}
+{%- endmacro %}

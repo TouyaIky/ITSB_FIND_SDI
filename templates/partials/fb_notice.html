@@ -1,0 +1,2 @@
+{#- Notifikasi mahasiswa: ada pembaruan Satpam (status/tanggapan) yang belum dibaca -#}
+{% if unread_fb %}<a class="notice red fb-notice" href="{{ url_for('feedback.mine') }}" role="status"><i data-lucide="bell-ring" class="i"></i><span>Ada {{ unread_fb }} pembaruan baru dari Satpam pada kritik dan saranmu.</span><b>Lihat</b></a>{% endif %}

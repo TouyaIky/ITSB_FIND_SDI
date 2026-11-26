@@ -1,0 +1,15 @@
+{% extends "app_base.html" if g.user else "public_base.html" %}
+{% block title %}Kritik dan Saran — ITSB FIND{% endblock %}
+{% block inner %}
+<div style="max-width:760px;{{ 'margin-inline:auto' if not g.user }}">
+  <div class="page-head"><div><h1>Kritik dan Saran</h1><p>Bantu kami meningkatkan ITSB FIND.{% if not g.user %} Tidak perlu masuk akun.{% endif %}</p></div></div>
+  {% include 'partials/fb_notice.html' %}
+  {% include 'partials/feedback_form.html' %}
+  {% if g.user and g.user.role != 'security' %}
+  <div class="section-row"><h2 class="section-title" style="margin:0">Masukan terbaru saya</h2><a class="link-more" href="{{ url_for('feedback.mine') }}">Lihat Semua</a></div>
+  {% if mine %}<div class="fb-list">{% for m in mine %}{% include 'partials/fb_item.html' %}{% endfor %}</div>
+  {% else %}<div class="empty" style="padding:2rem"><p style="margin:0">Belum ada masukan yang kamu kirim.</p></div>{% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+{% block js %}<script src="{{ url_for('static', filename='js/forms.js') }}"></script>{% endblock %}

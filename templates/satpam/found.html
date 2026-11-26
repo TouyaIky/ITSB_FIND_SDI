@@ -1,0 +1,24 @@
+{% extends "app_base.html" %}
+{% block title %}Barang Temuan — Satpam{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Barang Temuan</h1><p>Verifikasi penerimaan, ubah, tolak, atau hapus laporan barang temuan.</p></div></div>
+<div class="tabs">{% for label, val in [('Semua',''),('Menunggu Penyerahan','pending'),('Belum Dikembalikan','stored'),('Sudah Dikembalikan','returned'),('Ditolak','declined')] %}
+  <a class="{{ 'on' if status==val }}" href="{{ url_for('satpam.found', status=val) if val else url_for('satpam.found') }}">{{ label }}</a>{% endfor %}</div>
+{% if items %}<div class="table-wrap"><table><thead><tr><th>ID</th><th>Barang</th><th>Penemu & telepon</th><th>Lokasi & waktu</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+{% for f in items %}<tr><td>#{{ f.id }}</td><td><div class="cell-item"><img class="thumb" src="{{ url_for('static', filename='uploads/' ~ f.photo) }}" alt=""><div><b>{{ f.item_name }}</b><small>{{ f.category }}</small></div></div><small style="color:var(--dim);display:block;max-width:320px;margin-top:.3rem">{{ f.description }}</small></td>
+  <td>{{ f.reporter }} <small style="color:var(--dim)">({{ f.reporter_role|role_label }})</small><br><a href="tel:{{ f.reporter_phone }}">{{ f.reporter_phone or '-' }}</a></td>
+  <td>{{ f.location }}<br><small style="color:var(--dim)">{{ f.date_found|idate }}, {{ f.time_found }}</small></td>
+  <td><span class="badge {{ f.status|status_cls }}">{{ f.status|status_label }}</span>{% if f.status=='declined' and f.review_note %}<small style="display:block;color:var(--dim);max-width:200px;margin-top:.3rem">{{ f.review_note }}</small>{% endif %}</td>
+  <td><div class="actions">
+    {% if f.status=='pending' %}<form method="post" action="{{ url_for('satpam.confirm', fid=f.id) }}" data-confirm="Konfirmasi barang ini sudah diterima secara fisik?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-primary btn-sm" type="submit"><i data-lucide="check" class="i"></i>Verifikasi</button></form>
+    {% elif f.status=='stored' %}<a class="btn btn-primary btn-sm" href="{{ url_for('satpam.return_item', fid=f.id) }}"><i data-lucide="hand-helping" class="i"></i>Proses pengembalian</a>
+    {% elif f.status=='declined' %}<form method="post" action="{{ url_for('satpam.found_status', fid=f.id) }}" data-confirm="Pulihkan laporan ini ke status Menunggu Penyerahan?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="status" value="pending"><button class="btn btn-sm" type="submit"><i data-lucide="undo-2" class="i"></i>Pulihkan</button></form>
+    {% else %}<span class="chip">Selesai</span>{% endif %}
+    {% if f.status!='returned' %}
+      <a class="btn btn-sm btn-ghost" href="{{ url_for('satpam.found_edit', fid=f.id) }}"><i data-lucide="pencil" class="i"></i>Edit</a>
+      {% if f.status!='declined' %}<button type="button" class="btn btn-sm btn-ghost" data-decline="{{ url_for('satpam.found_status', fid=f.id) }}" data-name="{{ f.item_name }}"><i data-lucide="circle-x" class="i"></i>Tolak</button>{% endif %}
+      <form method="post" action="{{ url_for('satpam.found_delete', fid=f.id) }}" data-confirm="Hapus laporan ini secara permanen?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-sm btn-danger" type="submit"><i data-lucide="trash-2" class="i"></i>Hapus</button></form>
+    {% endif %}</div></td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="empty"><i data-lucide="package-open" class="i"></i><h3>{{ 'Tidak ada data' if status else 'Belum ada laporan barang temuan' }}</h3><p>{{ 'Belum ada barang pada status ini.' if status else 'Belum ada barang ditemukan yang dilaporkan.' }}</p></div>{% endif %}
+{% include 'satpam/_decline_modal.html' %}
+{% endblock %}

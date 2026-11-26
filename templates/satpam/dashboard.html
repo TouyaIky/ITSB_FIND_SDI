@@ -1,0 +1,37 @@
+{% extends "app_base.html" %}
+{% block title %}Dasbor Satpam — ITSB FIND{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Dasbor Satpam</h1><p>Verifikasi laporan, kelola pengembalian barang, dan tindak lanjuti masukan pengguna.</p></div>
+  <div class="actions"><a class="btn btn-sm" href="{{ url_for('satpam.found', status='pending') }}"><i data-lucide="badge-check" class="i"></i>Verifikasi laporan</a>
+  <a class="btn btn-primary btn-sm" href="{{ url_for('satpam.returns') }}"><i data-lucide="hand-helping" class="i"></i>Proses pengembalian</a></div></div>
+<div class="stat-cards auto">
+  <a class="card stat-card" href="{{ url_for('satpam.lost') }}"><div class="top">Total barang hilang<span class="ic"><i data-lucide="search-x" class="i"></i></span></div><div class="num" data-count="{{ lost.total }}">0</div></a>
+  <a class="card stat-card" href="{{ url_for('satpam.found') }}"><div class="top">Total barang ditemukan<span class="ic"><i data-lucide="package-check" class="i"></i></span></div><div class="num" data-count="{{ found.total }}">0</div></a>
+  <a class="card stat-card" href="{{ url_for('satpam.found', status='pending') }}"><div class="top">Laporan menunggu verifikasi<span class="ic"><i data-lucide="hourglass" class="i"></i></span></div><div class="num" data-count="{{ found.pending }}">0</div></a>
+  <div class="card stat-card"><div class="top">Laporan terverifikasi<span class="ic"><i data-lucide="shield-check" class="i"></i></span></div><div class="num" data-count="{{ found.received }}">0</div></div>
+  <a class="card stat-card" href="{{ url_for('satpam.found', status='returned') }}"><div class="top">Barang sudah dikembalikan<span class="ic"><i data-lucide="badge-check" class="i"></i></span></div><div class="num" data-count="{{ found.returned }}">0</div></a>
+  <a class="card stat-card" href="{{ url_for('satpam.found', status='stored') }}"><div class="top">Barang belum dikembalikan<span class="ic"><i data-lucide="shield" class="i"></i></span></div><div class="num" data-count="{{ found.stored }}">0</div></a>
+  <a class="card stat-card" href="{{ url_for('satpam.feedback') }}"><div class="top">Total kritik dan saran<span class="ic"><i data-lucide="message-square-text" class="i"></i></span></div><div class="num" data-count="{{ fb.total }}">0</div></a>
+</div>
+<div class="card panel"><h3>Menunggu konfirmasi penerimaan <a href="{{ url_for('satpam.found', status='pending') }}">Lihat semua</a></h3>
+  {% if pending %}<div class="table-wrap"><table><thead><tr><th>Barang</th><th>Penemu</th><th>Telepon</th><th>Lokasi</th><th></th></tr></thead><tbody>
+  {% for f in pending %}<tr><td><div class="cell-item"><img class="thumb" src="{{ url_for('static', filename='uploads/' ~ f.photo) }}" alt=""><div><b>{{ f.item_name }}</b><small>{{ f.category }}</small></div></div></td><td>{{ f.reporter }}</td>
+    <td><a href="tel:{{ f.reporter_phone }}">{{ f.reporter_phone or '-' }}</a></td><td>{{ f.location }}</td>
+    <td><form method="post" action="{{ url_for('satpam.confirm', fid=f.id) }}" data-confirm="Konfirmasi barang ini sudah diterima secara fisik?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-primary btn-sm" type="submit"><i data-lucide="check" class="i"></i>Konfirmasi penerimaan</button></form></td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty" style="padding:1.6rem"><i data-lucide="inbox" class="i"></i><p style="margin:0">Tidak ada barang yang menunggu konfirmasi.</p></div>{% endif %}</div>
+<div class="card panel" style="margin-top:1rem"><h3>Aktivitas terbaru <a href="{{ url_for('satpam.activity') }}">Riwayat lengkap</a></h3>
+  {% if activity %}<div class="table-wrap"><table><thead><tr><th>Aktivitas</th><th>Barang / Subjek</th><th>Oleh</th><th>Status</th><th>Waktu</th></tr></thead><tbody>
+  {% for a in activity %}<tr><td>{{ kinds[a.kind][0] }}</td><td><b>{{ a.name }}</b></td><td>{{ a.actor }}</td><td><span class="badge {{ a.status|status_cls }}">{{ a.status|status_label }}</span></td><td>{{ a.ts|idt }}</td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty" style="padding:1.6rem"><i data-lucide="history" class="i"></i><p style="margin:0">Belum ada aktivitas yang tercatat.</p></div>{% endif %}</div>
+<div class="card panel" style="margin-top:1rem"><h3>Kritik dan Saran <a href="{{ url_for('satpam.feedback') }}">Kelola</a></h3>
+  {% if fb_reply_unread %}<a class="notice red fb-unanswered" href="{{ url_for('satpam.feedback', resp='reply') }}" style="margin-bottom:1rem"><i data-lucide="message-circle-reply" class="i"></i><span>{{ fb_reply_unread }} masukan punya balasan baru dari pengirim.</span><b>Tampilkan</b></a>{% endif %}
+  {% if fb_unanswered %}<a class="notice fb-unanswered" href="{{ url_for('satpam.feedback', resp='none') }}" style="margin-bottom:1rem"><i data-lucide="message-circle-warning" class="i"></i><span>{{ fb_unanswered }} masukan belum pernah ditanggapi.</span><b>Tampilkan</b></a>{% endif %}
+  <div class="stat-cards six" style="margin:0">
+    <div class="card stat-mini"><span class="lbl">Total masukan</span><span class="num">{{ fb.total }}</span></div>
+    <a class="card stat-mini" href="{{ url_for('satpam.feedback', status='new') }}"><span class="lbl">Baru</span><span class="num">{{ fb.new }}</span></a>
+    <a class="card stat-mini" href="{{ url_for('satpam.feedback', status='reviewing') }}"><span class="lbl">Sedang Ditinjau</span><span class="num">{{ fb.reviewing }}</span></a>
+    <a class="card stat-mini" href="{{ url_for('satpam.feedback', status='in_progress') }}"><span class="lbl">Sedang Dikerjakan</span><span class="num">{{ fb.in_progress }}</span></a>
+    <a class="card stat-mini" href="{{ url_for('satpam.feedback', status='done') }}"><span class="lbl">Selesai</span><span class="num">{{ fb.done }}</span></a>
+    <a class="card stat-mini" href="{{ url_for('satpam.feedback', status='rejected') }}"><span class="lbl">Tidak Dapat Ditindaklanjuti</span><span class="num">{{ fb.rejected }}</span></a>
+  </div></div>
+{% endblock %}

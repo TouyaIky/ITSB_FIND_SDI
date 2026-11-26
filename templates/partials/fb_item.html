@@ -1,0 +1,6 @@
+{#- Kartu ringkas satu kritik/saran milik pengguna (dipakai di dashboard, /feedback, dan riwayat lengkap) -#}
+<a class="card fb-item" href="{{ url_for('feedback.mine_detail', fid=m.id) }}">
+  <div class="fb-item-top"><b class="fb-item-title">{{ m.subject }}</b><span class="fb-item-badges">{% if m.unread %}<span class="new-tag">Baru</span>{% endif %}<span class="badge {{ m.status|status_cls }}">{{ m.status|status_label }}</span></span></div>
+  <small class="fb-item-meta">{{ m.category }} · {{ m.created_at|idt }}{% if m.n_resp %} · <span class="resp-count"><i data-lucide="message-circle-reply" class="i"></i>{{ m.n_resp }} tanggapan</span>{% endif %}</small>
+  <div class="msg fb-item-msg">{{ m.message|truncate(110) }}</div>
+</a>

@@ -1,0 +1,62 @@
+{% extends "app_base.html" %}
+{% block title %}Detail Masukan #{{ item.id }} — Satpam{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Detail Masukan</h1><p>#{{ item.id }} · {{ item.created_at|idt }}</p></div><a class="btn btn-ghost btn-sm" href="{{ url_for('satpam.feedback') }}"><i data-lucide="arrow-left" class="i"></i>Kembali</a></div>
+<div class="fb-detail">
+  <div style="display:grid;gap:1rem">
+    <div class="card">
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;justify-content:space-between">
+        <h3 style="font-size:1.2rem">{{ item.subject }}</h3><span class="badge {{ item.status|status_cls }}" id="curBadge">{{ item.status|status_label }}</span></div>
+      <div class="detail-list">
+        <div><b>Pengirim</b><span>{{ item.sender_name }}</span></div>
+        <div><b>Email</b><span>{{ item.sender_email or '-' }}</span></div>
+        <div><b>Tanggal kirim</b><span>{{ item.created_at|idt }}</span></div>
+        <div><b>Kategori</b><span>{{ item.category }}</span></div>
+        <div id="handledRow"{% if not item.handler %} hidden{% endif %}><b>Terakhir ditangani</b><span id="handledVal">{{ item.handler }} · {{ item.updated_at|idt }}</span></div>
+      </div>
+      <div class="fb-msg">{{ item.message }}</div>
+      {% if item.status=='rejected' and item.status_reason %}<div class="notice red" style="margin-top:1rem"><i data-lucide="info" class="i"></i><span><b>Alasan (terlihat oleh pengirim):</b> {{ item.status_reason }}</span></div>{% endif %}
+    </div>
+    <div class="card" id="tanggapan">
+      <h3 style="margin-bottom:1rem">Percakapan dengan pengirim <span class="chip" id="respCount">{{ responses|length }}</span></h3>
+      <ul class="resp-list" id="respList"{% if not responses %} hidden{% endif %}>{% for r in responses %}<li class="resp{{ ' resp-student' if r.from_student }}"><div class="resp-head"><b>{{ r.officer or ('Pengirim' if r.from_student else 'Satpam') }}{% if r.from_student %} <span class="badge b-info">Pengirim</span>{% endif %}</b><small>{{ r.created_at|idt }}</small></div><div class="resp-body">{{ r.message }}</div></li>{% endfor %}</ul>
+      <p class="hint" id="respEmpty" style="margin-bottom:1rem"{% if responses %} hidden{% endif %}>Belum ada tanggapan.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:1rem">Riwayat perubahan status</h3>
+      <ul class="tl" id="histList">
+      {% for h in history %}<li><b>{% if h.old_status %}<span class="badge {{ h.old_status|status_cls }}">{{ h.old_status|status_label }}</span> → {% endif %}<span class="badge {{ h.new_status|status_cls }}">{{ h.new_status|status_label }}</span></b>
+        <small>{{ h.created_at|idt }} · {{ h.actor or ('Sistem' if not h.old_status else '-') }}</small>
+        {% if h.note %}<div class="tl-note">{{ h.note }}</div>{% endif %}</li>
+      {% else %}<li>Belum ada riwayat.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div style="display:grid;gap:1rem">
+    <form class="card" id="respForm" method="post" action="{{ url_for('satpam.feedback_respond', fid=item.id) }}" data-fb-ajax="respond" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 style="margin-bottom:1rem">{{ 'Kirim tanggapan tambahan' if responses else 'Kirim tanggapan' }}</h3>
+      <div class="tpl-row" aria-label="Balasan cepat">{% for label, text in reply_templates %}<button type="button" class="btn btn-sm" data-tpl="{{ tr(text) }}">{{ tr(label) }}</button>{% endfor %}</div>
+      <div class="field"><label for="response">Tanggapan</label><textarea class="textarea" id="response" name="response" required minlength="3" maxlength="1000" style="min-height:120px" placeholder="Tulis tanggapan untuk pengirim"></textarea><span class="hint">Tanggapan dapat dilihat oleh pengirim dan tidak menimpa tanggapan sebelumnya.</span><div class="counter"></div><p class="field-err" role="alert" hidden></p></div>
+      <div class="field"><label for="respStatus">Ubah status sekaligus (opsional)</label><select class="select" id="respStatus" name="status"><option value="">Tidak mengubah status</option>{% for code, label, cls in statuses %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select><span class="hint">Untuk status Tidak Dapat Ditindaklanjuti, isi tanggapan menjadi alasannya.</span></div>
+      <button class="btn btn-primary" type="submit"><i data-lucide="send" class="i"></i><span class="lbl">Kirim tanggapan</span></button>
+    </form>
+    <form class="card" id="statusForm" method="post" action="{{ url_for('satpam.feedback_status', fid=item.id) }}" data-fb-ajax="status" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <h3 style="margin-bottom:1rem">Ubah status</h3>
+      <div class="field"><label for="status">Status</label><select class="select" id="status" name="status" data-current="{{ item.status }}">{% for code, label, cls in statuses %}<option value="{{ code }}" {{ 'selected' if item.status==code }}>{{ label }}</option>{% endfor %}</select><p class="field-err" role="alert" hidden></p></div>
+      <div class="field" id="reasonField" hidden><label for="reason">Catatan perubahan</label><textarea class="textarea" id="reason" name="reason" maxlength="500" style="min-height:90px" placeholder="Wajib diisi jika status Tidak Dapat Ditindaklanjuti"></textarea><span class="hint">Alasan untuk status Tidak Dapat Ditindaklanjuti dapat dilihat oleh pengirim. Catatan untuk status lain hanya tampil di riwayat petugas.</span></div>
+      <button class="btn btn-primary" type="submit" id="statusSave" hidden><i data-lucide="save" class="i"></i><span class="lbl">Simpan Perubahan</span></button>
+    </form>
+    <form class="card" method="post" action="{{ url_for('satpam.feedback_note', fid=item.id) }}" data-once novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <span class="internal-tag"><i data-lucide="lock" class="i"></i>Internal, tidak terlihat oleh pengguna</span>
+      <h3 style="margin-bottom:1rem">Catatan internal</h3>
+      <div class="field"><textarea class="textarea" name="note" maxlength="1000" style="min-height:120px" aria-label="Catatan internal" placeholder="Catatan untuk sesama petugas">{{ item.internal_note or '' }}</textarea><div class="counter"></div></div>
+      {% if item.note_updated_at %}<p class="hint" style="margin-bottom:.8rem">Diperbarui {{ item.note_updated_at|idt }}{% if item.note_author %} oleh {{ item.note_author }}{% endif %}</p>{% endif %}
+      <button class="btn" type="submit"><i data-lucide="save" class="i"></i>Simpan catatan</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block js %}<script src="{{ url_for('static', filename='js/satpam_feedback.js') }}"></script>{% endblock %}

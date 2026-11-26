@@ -1,0 +1,15 @@
+{% extends "app_base.html" %}
+{% block title %}Riwayat Kritik dan Saran — ITSB FIND{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Riwayat Kritik dan Saran</h1><p>Semua masukan yang pernah kamu kirim beserta status dan tanggapan Satpam.</p></div>
+  <a class="btn btn-primary btn-sm" href="{{ url_for('feedback.page') }}"><i data-lucide="send" class="i"></i>Kirim masukan baru</a></div>
+{% if rows %}
+<p class="hint" style="margin-bottom:.8rem">Pembaruan Satpam yang belum kamu baca ditandai dengan label Baru.</p>
+<div class="fb-list">{% for m in rows %}{% include 'partials/fb_item.html' %}{% endfor %}</div>
+{% if pages > 1 %}<nav class="pager" aria-label="Halaman">
+  {% if page > 1 %}<a href="{{ url_for('feedback.mine', page=page-1) }}" aria-label="Sebelumnya">‹</a>{% endif %}
+  {% for n in range(1, pages+1) %}{% if n==page %}<span class="cur" aria-current="page">{{ n }}</span>{% elif n==1 or n==pages or (n-page)|abs<=1 %}<a href="{{ url_for('feedback.mine', page=n) }}">{{ n }}</a>{% elif (n-page)|abs==2 %}<span class="gap">…</span>{% endif %}{% endfor %}
+  {% if page < pages %}<a href="{{ url_for('feedback.mine', page=page+1) }}" aria-label="Berikutnya">›</a>{% endif %}
+</nav>{% endif %}
+{% else %}<div class="empty"><i data-lucide="message-square-text" class="i"></i><h3>Belum ada masukan</h3><p>Kamu belum mengirim kritik atau saran.</p><a class="btn btn-primary" href="{{ url_for('feedback.page') }}">Kirim masukan</a></div>{% endif %}
+{% endblock %}

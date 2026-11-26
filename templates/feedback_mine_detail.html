@@ -1,0 +1,34 @@
+{% extends "app_base.html" %}
+{% block title %}Detail Masukan — ITSB FIND{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Detail Masukan</h1><p>{{ item.created_at|idt }}</p></div><a class="btn btn-ghost btn-sm" href="{{ url_for('feedback.mine') }}"><i data-lucide="arrow-left" class="i"></i>Kembali ke riwayat</a></div>
+<div class="fb-detail">
+  <div style="display:grid;gap:1rem;min-width:0">
+    <div class="card">
+      <div class="fb-item-top"><h3 style="font-size:1.2rem">{{ item.subject }}</h3><span class="badge {{ item.status|status_cls }}">{{ item.status|status_label }}</span></div>
+      <p class="hint status-help">{{ item.status|status_help }}</p>
+      <div class="detail-list"><div><b>Kategori</b><span>{{ item.category }}</span></div><div><b>Tanggal kirim</b><span>{{ item.created_at|idt }}</span></div>
+        {% if item.updated_at %}<div><b>Terakhir diperbarui</b><span>{{ item.updated_at|idt }}</span></div>{% endif %}</div>
+      <div class="fb-msg">{{ item.message }}</div>
+      {% if item.status=='rejected' and item.status_reason %}<div class="notice red" style="margin-top:1rem"><i data-lucide="info" class="i"></i><span><b>Alasan dari Satpam:</b> {{ item.status_reason }}</span></div>{% endif %}
+    </div>
+    <div class="card" id="tanggapan">
+      <h3 style="margin-bottom:1rem">Percakapan dengan Satpam <span class="chip" id="respCount">{{ responses|length }}</span></h3>
+      <ul class="resp-list" id="respList"{% if not responses %} hidden{% endif %}>{% for r in responses %}<li class="resp{{ ' resp-mine' if r.from_student }}"><div class="resp-head"><b>{{ 'Kamu' if r.from_student else 'Satpam' }}</b><small>{{ r.created_at|idt }}</small></div><div class="resp-body">{{ r.message }}</div></li>{% endfor %}</ul>
+      <div class="empty" id="respEmpty" style="padding:1.4rem"{% if responses %} hidden{% endif %}><p style="margin:0">Belum ada tanggapan dari Satpam.</p></div>
+      <form id="replyForm" method="post" action="{{ url_for('feedback.reply', fid=item.id) }}" novalidate style="margin-top:1.1rem"{% if not can_reply %} hidden{% endif %}>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field"><label for="reply">Balas Satpam</label><textarea class="textarea" id="reply" name="response" required minlength="3" maxlength="1000" style="min-height:100px" placeholder="Tulis balasanmu (maks. 1000 karakter)"></textarea><div class="counter"></div><p class="field-err" role="alert" hidden></p></div>
+        <button class="btn btn-primary" type="submit"><i data-lucide="send" class="i"></i><span class="lbl">Kirim balasan</span></button>
+      </form>
+      <p class="hint" id="replyNote" style="margin-top:1rem"{% if not reply_hint %} hidden{% endif %}>{{ reply_hint }}</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:1rem">Riwayat status</h3>
+    <ul class="tl">{% for h in history %}<li><b>{% if h.old_status %}<span class="badge {{ h.old_status|status_cls }}">{{ h.old_status|status_label }}</span> → {% endif %}<span class="badge {{ h.new_status|status_cls }}">{{ h.new_status|status_label }}</span></b><small>{{ h.created_at|idt }}</small></li>
+    {% else %}<li>Belum ada riwayat.</li>{% endfor %}</ul>
+  </div>
+</div>
+{% endblock %}
+{% block js %}<script src="{{ url_for('static', filename='js/feedback_reply.js') }}"></script>{% endblock %}

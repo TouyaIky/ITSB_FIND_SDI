@@ -1,0 +1,21 @@
+{% extends "app_base.html" %}
+{% block title %}Edit Laporan — Satpam{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Edit Laporan</h1><p>{{ 'Barang temuan' if kind=='found' else 'Barang hilang' }} #{{ item.id }} · dilaporkan oleh {{ item.reporter }}</p></div>
+  <a class="btn btn-ghost btn-sm" href="{{ back }}"><i data-lucide="arrow-left" class="i"></i>Kembali</a></div>
+<form class="card form-card" method="post" data-once novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field"><label for="item_name">Nama barang</label><input class="input" id="item_name" name="item_name" required maxlength="100" value="{{ d.item_name }}"></div>
+  <div class="row-2">
+    <div class="field"><label for="category">Kategori</label><select class="select" id="category" name="category" required>{% for c in categories %}<option value="{{ c }}" {{ 'selected' if d.category==c }}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="location">{{ 'Lokasi ditemukan' if kind=='found' else 'Lokasi kehilangan' }}</label><input class="input" id="location" name="location" list="locs" required maxlength="100" value="{{ d.location }}"><datalist id="locs">{% for s in suggestions %}<option value="{{ s }}">{% endfor %}</datalist></div>
+  </div>
+  <div class="row-2">
+    <div class="field"><label for="date">{{ 'Tanggal ditemukan' if kind=='found' else 'Tanggal kehilangan' }}</label><input class="input" id="date" name="date" type="date" max="{{ today }}" required value="{{ d.date }}"></div>
+    <div class="field"><label for="time">{{ 'Waktu ditemukan' if kind=='found' else 'Waktu kehilangan' }}</label><input class="input" id="time" name="time" type="time" required value="{{ d.time }}"></div>
+  </div>
+  <div class="field"><label for="phone">Nomor telepon pelapor</label><input class="input" id="phone" name="phone" type="tel" inputmode="tel" required maxlength="20" value="{{ d.phone }}"></div>
+  <div class="field"><label for="description">Deskripsi / ciri-ciri</label><textarea class="textarea" id="description" name="description" required minlength="10" maxlength="1000">{{ d.description }}</textarea><div class="counter"></div></div>
+  <button class="btn btn-primary" type="submit"><i data-lucide="save" class="i"></i>Simpan perubahan</button>
+</form>
+{% endblock %}

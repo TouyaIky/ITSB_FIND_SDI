@@ -1,0 +1,7 @@
+<div class="prefs">
+  <button type="button" class="pref-btn" data-theme-toggle aria-label="Ganti tema terang/gelap" title="Ganti tema terang/gelap"><i data-lucide="sun" class="i icon-sun"></i><i data-lucide="moon" class="i icon-moon"></i></button>
+  <div class="lang-switch" role="group" aria-label="Bahasa">
+    <a href="{{ url_for('main.set_lang', code='id', next=request.full_path.rstrip('?')) }}" hreflang="id" class="{{ 'on' if lang=='id' }}" {{ 'aria-current=true' if lang=='id' }}>ID</a>
+    <a href="{{ url_for('main.set_lang', code='en', next=request.full_path.rstrip('?')) }}" hreflang="en" class="{{ 'on' if lang=='en' }}" {{ 'aria-current=true' if lang=='en' }}>EN</a>
+  </div>
+</div>
